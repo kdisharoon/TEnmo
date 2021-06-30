@@ -23,24 +23,6 @@ public class JdbcAccountDao implements AccountDao {
         return balance;
     }
 
-    @Override
-    public BigDecimal transferBalance(Long userFromId, Long userToId, BigDecimal amount) {
-
-        BigDecimal fromBalance = getBalance(userFromId);
-        BigDecimal toBalance = getBalance(userToId);
-
-        if (fromBalance.compareTo(amount) >= 0) {
-            BigDecimal toBalanceNew = toBalance.add(amount);
-            BigDecimal fromBalanceNew = fromBalance.subtract(amount);
-
-            String sql = "UPDATE accounts SET balance = ? WHERE account_id = ?;";
-
-            jdbcTemplate.update(sql, toBalanceNew, userToId);
-            jdbcTemplate.update(sql, fromBalanceNew, userFromId);
-        }
-
-        return amount;
-    }
 
 
 }

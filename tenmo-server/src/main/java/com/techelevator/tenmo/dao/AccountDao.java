@@ -8,7 +8,7 @@ public interface AccountDao {
 
     BigDecimal getBalance(Long accountId);
 
-    BigDecimal transferBalance(Long userFromId, Long userToId, BigDecimal amount);
+
 
 
 }
