@@ -51,10 +51,10 @@ public class JdbcTransferDao implements TransferDao {
     }
 
     @Override
-    public BigDecimal sendTransfer(Long userFromId, Long userToId, BigDecimal amount) {
+    public BigDecimal createTransfer(Long userFromId, Long userToId, BigDecimal amount) {
 
-        BigDecimal fromBalance = accountDao.getBalance(userFromId);
-        BigDecimal toBalance = accountDao.getBalance(userToId);
+        BigDecimal fromBalance = accountDao.getAccount(userFromId).getBalance();
+        BigDecimal toBalance = accountDao.getAccount(userToId).getBalance();
 
         if (fromBalance.compareTo(amount) >= 0) {
             BigDecimal toBalanceNew = toBalance.add(amount);

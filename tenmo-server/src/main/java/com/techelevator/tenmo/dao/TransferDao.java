@@ -11,6 +11,6 @@ public interface TransferDao {
 
     List<Transfer> getAllTransfers(Long userId);
 
-    BigDecimal sendTransfer(Long userFromId, Long userToId, BigDecimal amount);
+    BigDecimal createTransfer(Long userFromId, Long userToId, BigDecimal amount);
 
 }
