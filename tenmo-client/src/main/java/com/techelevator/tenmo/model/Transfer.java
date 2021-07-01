@@ -30,7 +30,7 @@ public class Transfer {
         this.transferId = transferId;
     }
 
-    public Integer getTransferTypeId() {
+    public int getTransferTypeId() {
         return transferTypeId;
     }
 
@@ -38,7 +38,7 @@ public class Transfer {
         this.transferTypeId = transferTypeId;
     }
 
-    public Integer getTransferStatusId() {
+    public int getTransferStatusId() {
         return transferStatusId;
     }
 
@@ -83,4 +83,3 @@ public class Transfer {
     }
 
 }
-
