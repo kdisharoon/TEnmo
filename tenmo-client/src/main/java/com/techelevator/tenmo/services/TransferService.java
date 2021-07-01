@@ -52,6 +52,8 @@ public class TransferService {
 
         Integer userId = currentUser.getUser().getId();
 
+        System.out.println(userId);
+
         try {
             transfers = restTemplate.exchange(API_BASE_URL + "transfers/" + userId,
                                               HttpMethod.GET, entity, Transfer[].class).getBody();
