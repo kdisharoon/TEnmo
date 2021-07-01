@@ -2,16 +2,17 @@ package com.techelevator.tenmo.controller;
 
 
 import com.techelevator.tenmo.dao.AccountDao;
+import com.techelevator.tenmo.dao.TransferDao;
 import com.techelevator.tenmo.dao.UserDao;
 import com.techelevator.tenmo.exception.AcctNotFoundException;
+import com.techelevator.tenmo.exception.TransferNotFoundException;
 import com.techelevator.tenmo.exception.UserNotFoundException;
 import com.techelevator.tenmo.model.Account;
+import com.techelevator.tenmo.model.Transfer;
 import com.techelevator.tenmo.model.User;
 import org.springframework.web.bind.annotation.*;
-
-import javax.security.auth.login.AccountNotFoundException;
 import javax.validation.Valid;
-import java.math.BigDecimal;
+import java.security.Principal;
 import java.util.List;
 
 
@@ -20,10 +21,12 @@ public class TenmoController {
 
     private UserDao userDao;
     private AccountDao accountDao;
+    private TransferDao transferDao;
 
-    public TenmoController(UserDao userDao, AccountDao accountDao) {
+    public TenmoController(UserDao userDao, AccountDao accountDao, TransferDao transferDao) {
         this.userDao = userDao;
         this.accountDao = accountDao;
+        this.transferDao = transferDao;
     }
 
 
@@ -43,14 +46,19 @@ public class TenmoController {
 //    }
 
     @RequestMapping(path = "accounts/{id}", method = RequestMethod.GET)
-    public BigDecimal getBalance(@PathVariable Long id) throws AcctNotFoundException {
-        return accountDao.getAccount(id).getBalance();
+    public Account getAccount(@PathVariable Integer id) throws AcctNotFoundException {
+        return accountDao.getAccount(id);
     }
 
     @RequestMapping(path = "accounts/{id}", method = RequestMethod.PUT)
-    public boolean updateBalance(@Valid @RequestBody Account acct, @PathVariable Long id) throws AccountNotFoundException {
-        return accountDao.updateAccount(acct);
+    public boolean updateBalance(@Valid @RequestBody Account acct, @PathVariable Integer id) throws AcctNotFoundException {
+        return accountDao.updateAccount(acct, id);
+    }
 
+    @RequestMapping(path = "transfers/{id}", method = RequestMethod.GET)
+    public List<Transfer> getTransfers(@PathVariable Integer userId) throws TransferNotFoundException {
+        System.out.println("TenmoController getTransfers method reached");
+        return transferDao.getAllTransfers(userId);
     }
 
 

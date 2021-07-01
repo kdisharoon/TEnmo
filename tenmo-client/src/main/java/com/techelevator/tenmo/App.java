@@ -1,10 +1,17 @@
 package com.techelevator.tenmo;
 
+import com.techelevator.tenmo.model.Account;
 import com.techelevator.tenmo.model.AuthenticatedUser;
+import com.techelevator.tenmo.model.Transfer;
 import com.techelevator.tenmo.model.UserCredentials;
+import com.techelevator.tenmo.services.AccountService;
 import com.techelevator.tenmo.services.AuthenticationService;
 import com.techelevator.tenmo.services.AuthenticationServiceException;
+import com.techelevator.tenmo.services.TransferService;
 import com.techelevator.view.ConsoleService;
+import io.cucumber.java.bs.A;
+
+import java.math.BigDecimal;
 
 public class App {
 
@@ -25,15 +32,21 @@ private static final String API_BASE_URL = "http://localhost:8080/";
     private AuthenticatedUser currentUser;
     private ConsoleService console;
     private AuthenticationService authenticationService;
+    private AccountService accountService;
+    private TransferService transferService;
 
     public static void main(String[] args) {
-    	App app = new App(new ConsoleService(System.in, System.out), new AuthenticationService(API_BASE_URL));
+    	App app = new App(new ConsoleService(System.in, System.out), new AuthenticationService(API_BASE_URL),
+				          new AccountService(API_BASE_URL), new TransferService(API_BASE_URL));
     	app.run();
     }
 
-    public App(ConsoleService console, AuthenticationService authenticationService) {
+    public App(ConsoleService console, AuthenticationService authenticationService,
+			   AccountService accountService, TransferService transferService) {
 		this.console = console;
 		this.authenticationService = authenticationService;
+		this.accountService = accountService;
+		this.transferService = transferService;
 	}
 
 	public void run() {
@@ -68,12 +81,13 @@ private static final String API_BASE_URL = "http://localhost:8080/";
 	}
 
 	private void viewCurrentBalance() {
-		System.out.println("Your current balance is: " + currentUser.getUser());
-		
+    	Account a = accountService.getAccountById(currentUser);
+		System.out.println("Your current balance is: " + a.getBalance());
 	}
 
 	private void viewTransferHistory() {
-		// TODO Auto-generated method stub
+		Transfer[] transfers = transferService.getAllTransfers(currentUser);
+		System.out.println(transfers);
 		
 	}
 

@@ -18,10 +18,10 @@ public class JdbcAccountDao implements AccountDao {
     }
 
     @Override
-    public Account getAccount(Long accountId) {
+    public Account getAccount(Integer userId) {
         Account account = null;
-        String sql = "SELECT account_id, user_id, balance FROM accounts WHERE account_id = ?;";
-        SqlRowSet results = jdbcTemplate.queryForRowSet(sql, accountId);
+        String sql = "SELECT account_id, user_id, balance FROM accounts WHERE user_id = ?;";
+        SqlRowSet results = jdbcTemplate.queryForRowSet(sql, userId);
         if (results.next()) {
             account = mapRowToAccount(results);
         }
@@ -29,16 +29,16 @@ public class JdbcAccountDao implements AccountDao {
     }
 
     @Override
-    public boolean updateAccount(Account account) {
+    public boolean updateAccount(Account account, Integer accountId) {
         String sql = "UPDATE accounts SET balance = ? WHERE account_id = ?;";
-        int rows = jdbcTemplate.update(sql, account.getBalance(), account.getAccountId());
+        int rows = jdbcTemplate.update(sql, account.getBalance(), accountId);
         return (rows == 1);
     }
 
     private Account mapRowToAccount(SqlRowSet rowSet) {
         Account a = new Account();
-        a.setAccountId(rowSet.getLong("account_id"));
-        a.setUserId(rowSet.getLong("user_id"));
+        a.setAccountId(rowSet.getInt("account_id"));
+        a.setUserId(rowSet.getInt("user_id"));
         a.setBalance(rowSet.getBigDecimal("balance"));
         return a;
     }

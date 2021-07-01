@@ -2,13 +2,11 @@ package com.techelevator.tenmo.dao;
 
 import com.techelevator.tenmo.model.Account;
 
-import java.math.BigDecimal;
-
 public interface AccountDao {
 
-    Account getAccount(Long accountId);
+    Account getAccount(Integer userId);
 
-    boolean updateAccount(Account account);
+    boolean updateAccount(Account account, Integer accountId);
 
 
 }

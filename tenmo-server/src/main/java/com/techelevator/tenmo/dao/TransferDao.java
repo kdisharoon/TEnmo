@@ -7,10 +7,10 @@ import java.util.List;
 
 public interface TransferDao {
 
-    Transfer getTransfer(Long transferId);
+    Transfer getTransfer(Integer transferId);
 
-    List<Transfer> getAllTransfers(Long userId);
+    List<Transfer> getAllTransfers(Integer userId);
 
-    BigDecimal createTransfer(Long userFromId, Long userToId, BigDecimal amount);
+    BigDecimal createTransfer(Integer userFromId, Integer userToId, BigDecimal amount);
 
 }
