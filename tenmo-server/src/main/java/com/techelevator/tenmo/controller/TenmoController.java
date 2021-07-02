@@ -35,7 +35,6 @@ public class TenmoController {
 
     @RequestMapping(path = "users", method = RequestMethod.GET)
     public List<User> getAllUsers() {
-        System.out.println("getAllUsers in TEnmo controller reached");
         return userDao.findAll();
     }
 

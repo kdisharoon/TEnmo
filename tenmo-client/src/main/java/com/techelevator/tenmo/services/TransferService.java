@@ -57,7 +57,8 @@ public class TransferService {
 
     public Transfer createTransfer(AuthenticatedUser currentUser, Transfer transfer) {
         try {
-            restTemplate.postForObject(API_BASE_URL + "transfers", makeTransferEntity(currentUser, transfer), Transfer.class);
+            transfer = restTemplate.postForObject(API_BASE_URL + "transfers",
+                       makeTransferEntity(currentUser, transfer), Transfer.class);
         }
         catch (Exception e) {
             System.out.println("createTransfer in TransferService exception!");

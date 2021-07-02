@@ -92,6 +92,8 @@ private static final String API_BASE_URL = "http://localhost:8080/";
 
 		for (Transfer t : transfers) {
 			System.out.println(t.toString());
+			accountService.getAccountById(currentUser);
+			t.getAccountFrom(); //account_id
 		}
 		
 	}
@@ -101,23 +103,37 @@ private static final String API_BASE_URL = "http://localhost:8080/";
 		
 	}
 
+	//
+	//	Must actually update the account balances!!!!!
+	//
+	//
+	//
+
 	private void sendBucks() {
     	User[] users = userService.getAllUsers(currentUser);
+    	Account[] accounts = accountService.getAllAccounts(currentUser);
 
 		for (User u : users) {
 			System.out.println(u.toString());
 		}
 
-		Integer userInput = console.getUserInputInteger("Enter ID of user you'd like to send TE bucks to (0 to cancel)");
+		Integer toUserId = console.getUserInputInteger("Enter ID of user you'd like to send TE bucks to (0 to cancel)");
+		Integer toAccountId = null;
 
-		if (!(userInput == 0)) {
+		if (!(toUserId == 0)) {
 			for (User u : users) {
-				if (u.getId() == userInput) {
+				if (u.getId().equals(toUserId)) {
+					for (Account a : accounts) {
+						if (a.getUserId().equals(toUserId)) {
+							toAccountId = a.getAccountId();
+						}
+					}
+					System.out.println("Found user " + u.getId());
 					BigDecimal amountToTransfer = new BigDecimal(console.getUserInput("Enter amount to transfer (0 to cancel)"));
 					if ((amountToTransfer.compareTo(BigDecimal.ZERO) > 0) && (amountToTransfer.compareTo(viewCurrentBalance()) <= 0) ) {
 						Transfer t = new Transfer();
-						t.setAccountFrom(currentUser.getUser().getId());
-						t.setAccountTo(u.getId());
+						t.setAccountFrom(accountService.getAccountById(currentUser).getAccountId());
+						t.setAccountTo(toAccountId);
 						t.setAmount(amountToTransfer);
 						t.setTransferStatusId(2);
 						t.setTransferTypeId(2);
