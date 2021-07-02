@@ -11,6 +11,6 @@ public interface TransferDao {
 
     List<Transfer> getAllTransfers(Integer userId);
 
-    BigDecimal createTransfer(Integer userFromId, Integer userToId, BigDecimal amount);
+    Transfer createTransfer(Transfer transfer);
 
 }

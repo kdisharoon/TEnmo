@@ -41,9 +41,9 @@ public class JdbcTransferDao implements TransferDao {
 
         List<Transfer> transfers = new ArrayList<>();
         String sql = "SELECT transfer_id, transfer_type_id, transfer_status_id, account_from, account_to, amount " +
-                "FROM transfers t" +
-                "JOIN accounts a ON (t.account_from = a.account_id OR t.account_to = a.account_id)" +
-                "JOIN users u ON (a.user_id = u.user_id)" +
+                "FROM transfers t " +
+                "JOIN accounts a ON (t.account_from = a.account_id OR t.account_to = a.account_id) " +
+                "JOIN users u ON (a.user_id = u.user_id) " +
                 "WHERE a.user_id = ?;";
         SqlRowSet results = jdbcTemplate.queryForRowSet(sql, userId);
         while (results.next()) {
@@ -53,23 +53,14 @@ public class JdbcTransferDao implements TransferDao {
 
     }
 
-    @Override
-    public BigDecimal createTransfer(Integer userFromId, Integer userToId, BigDecimal amount) {
+    @Override   //pass in a Transfer object!!!!!
+    public Transfer createTransfer(Transfer transfer) {
+        String sql = "INSERT INTO transfers (transfer_type_id, transfer_status_id, account_from, account_to, amount) " +
+                     "VALUES (?, ?, ?, ?, ?) RETURNING transfer_id;";
+        Integer newTransferId = jdbcTemplate.queryForObject(sql, Integer.class, transfer.getTransferTypeId(),
+                transfer.getTransferStatusId(), transfer.getAccountFrom(), transfer.getAccountTo(), transfer.getAmount());
 
-        BigDecimal fromBalance = accountDao.getAccount(userFromId).getBalance();
-        BigDecimal toBalance = accountDao.getAccount(userToId).getBalance();
-
-        if (fromBalance.compareTo(amount) >= 0) {
-            BigDecimal toBalanceNew = toBalance.add(amount);
-            BigDecimal fromBalanceNew = fromBalance.subtract(amount);
-
-            String sql = "UPDATE accounts SET balance = ? WHERE account_id = ?;";
-
-            jdbcTemplate.update(sql, toBalanceNew, userToId);
-            jdbcTemplate.update(sql, fromBalanceNew, userFromId);
-        }
-
-        return amount;
+        return getTransfer(newTransferId);
     }
 
     private Transfer mapRowToTransfer(SqlRowSet rs) {

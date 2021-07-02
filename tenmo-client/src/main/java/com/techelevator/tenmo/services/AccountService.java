@@ -2,6 +2,7 @@ package com.techelevator.tenmo.services;
 
 import com.techelevator.tenmo.model.Account;
 import com.techelevator.tenmo.model.AuthenticatedUser;
+import com.techelevator.tenmo.model.Transfer;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -23,16 +24,11 @@ public class AccountService {
     }
 
     public Account getAccountById(AuthenticatedUser currentUser) {
-
         Account account = null;
-
-        HttpHeaders headers = new HttpHeaders();
-        headers.setBearerAuth(currentUser.getToken());
-        HttpEntity entity = new HttpEntity(headers);
 
         try {
             account = restTemplate.exchange(API_BASE_URL + "accounts/" + currentUser.getUser().getId(),
-                                            HttpMethod.GET, entity, Account.class).getBody();
+                                            HttpMethod.GET, makeAuthEntity(currentUser), Account.class).getBody();
         }
         catch (Exception e) {
             System.out.println("getAccountById exception!");
@@ -44,6 +40,15 @@ public class AccountService {
 
     public Account[] getAllAccounts(AuthenticatedUser currentUser) {
         Account[] accounts = null;
+
+        try {
+            accounts = restTemplate.exchange(API_BASE_URL + "accounts",
+                       HttpMethod.GET, makeAuthEntity(currentUser), Account[].class).getBody();
+        }
+        catch (Exception e) {
+            System.out.println("getAllAccounts exception!");
+        }
+
         return accounts;
     }
 
@@ -68,6 +73,13 @@ public class AccountService {
         }
 
         return account;
+    }
+
+    private HttpEntity makeAuthEntity(AuthenticatedUser currentUser) {
+        HttpHeaders headers = new HttpHeaders();
+        headers.setBearerAuth(currentUser.getToken());
+        HttpEntity entity = new HttpEntity(headers);
+        return entity;
     }
 
 

@@ -10,6 +10,8 @@ import com.techelevator.tenmo.exception.UserNotFoundException;
 import com.techelevator.tenmo.model.Account;
 import com.techelevator.tenmo.model.Transfer;
 import com.techelevator.tenmo.model.User;
+import org.springframework.http.HttpStatus;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import javax.validation.Valid;
 import java.security.Principal;
@@ -17,6 +19,7 @@ import java.util.List;
 
 
 @RestController
+@PreAuthorize("isAuthenticated()")
 public class TenmoController {
 
     private UserDao userDao;
@@ -32,6 +35,7 @@ public class TenmoController {
 
     @RequestMapping(path = "users", method = RequestMethod.GET)
     public List<User> getAllUsers() {
+        System.out.println("getAllUsers in TEnmo controller reached");
         return userDao.findAll();
     }
 
@@ -50,15 +54,25 @@ public class TenmoController {
         return accountDao.getAccount(id);
     }
 
+    @RequestMapping(path = "accounts", method = RequestMethod.GET)
+    public List<Account> getAllAccounts() {
+        return accountDao.getAllAccounts();
+    }
+
     @RequestMapping(path = "accounts/{id}", method = RequestMethod.PUT)
     public boolean updateBalance(@Valid @RequestBody Account acct, @PathVariable Integer id) throws AcctNotFoundException {
         return accountDao.updateAccount(acct, id);
     }
 
     @RequestMapping(path = "transfers/{id}", method = RequestMethod.GET)
-    public List<Transfer> getTransfers(@PathVariable Integer userId) throws TransferNotFoundException {
-        System.out.println("TenmoController getTransfers method reached");
+    public List<Transfer> getTransfers(@PathVariable("id") Integer userId) throws TransferNotFoundException {
         return transferDao.getAllTransfers(userId);
+    }
+
+    @ResponseStatus(HttpStatus.CREATED)
+    @RequestMapping(path = "transfers", method = RequestMethod.POST)
+    public Transfer create(@Valid @RequestBody Transfer transfer) {
+        return transferDao.createTransfer(transfer);
     }
 
 
