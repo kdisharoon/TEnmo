@@ -8,6 +8,8 @@ public interface AccountDao {
 
     Account getAccount(Integer userId);
 
+    Account getAccountByAccountId(Integer accountId);
+
     List<Account> getAllAccounts();
 
     boolean updateAccount(Account account, Integer accountId);

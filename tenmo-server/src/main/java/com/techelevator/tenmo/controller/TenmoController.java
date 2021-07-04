@@ -43,11 +43,6 @@ public class TenmoController {
         return userDao.findByUsername(username);
     }
 
-//    @RequestMapping(path = "users/{username}", method = RequestMethod.GET)
-//    public int getUserId(@PathVariable String username) throws UserNotFoundException {
-//        return userDao.findIdByUsername(username);
-//    }
-
     @RequestMapping(path = "accounts/{id}", method = RequestMethod.GET)
     public Account getAccount(@PathVariable Integer id) throws AcctNotFoundException {
         return accountDao.getAccount(id);
@@ -63,14 +58,19 @@ public class TenmoController {
         return accountDao.updateAccount(acct, id);
     }
 
-    @RequestMapping(path = "transfers/{id}", method = RequestMethod.GET)
-    public List<Transfer> getTransfers(@PathVariable("id") Integer userId) throws TransferNotFoundException {
+    @RequestMapping(path = "accounts/{id}/transfers", method = RequestMethod.GET)
+    public List<Transfer> getTransfers(@PathVariable("id") Integer userId) throws UserNotFoundException {
         return transferDao.getAllTransfers(userId);
+    }
+
+    @RequestMapping(path = "transfers/{transferId}", method = RequestMethod.GET)
+    public Transfer getTransferDetails(@PathVariable("transferId") Integer transferId) throws TransferNotFoundException {
+        return transferDao.getTransfer(transferId);
     }
 
     @ResponseStatus(HttpStatus.CREATED)
     @RequestMapping(path = "transfers", method = RequestMethod.POST)
-    public Transfer create(@Valid @RequestBody Transfer transfer) {
+    public Transfer create(@Valid @RequestBody Transfer transfer) throws TransferNotFoundException {
         return transferDao.createTransfer(transfer);
     }
 

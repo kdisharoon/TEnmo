@@ -62,6 +62,7 @@ private static final String API_BASE_URL = "http://localhost:8080/";
 				viewCurrentBalance();
 			} else if(MAIN_MENU_OPTION_VIEW_PAST_TRANSFERS.equals(choice)) {
 				viewTransferHistory();
+				viewTransferDetails();
 			} else if(MAIN_MENU_OPTION_VIEW_PENDING_REQUESTS.equals(choice)) {
 				viewPendingRequests();
 			} else if(MAIN_MENU_OPTION_SEND_BUCKS.equals(choice)) {
@@ -86,14 +87,8 @@ private static final String API_BASE_URL = "http://localhost:8080/";
 	private void viewTransferHistory() {
 		Transfer[] transfers = transferService.getAllTransfers(currentUser);
 
-		//*****
-		// Must print username instead of account_from and account_to in method below
-		//*****
-
 		for (Transfer t : transfers) {
 			System.out.println(t.toString());
-			accountService.getAccountById(currentUser);
-			t.getAccountFrom(); //account_id
 		}
 		
 	}
@@ -103,11 +98,15 @@ private static final String API_BASE_URL = "http://localhost:8080/";
 		
 	}
 
-	//
-	//	Must actually update the account balances!!!!!
-	//
-	//
-	//
+	private void viewTransferDetails() {
+		Integer transferId = console.getUserInputInteger("Enter Transfer ID for the transfer you'd like to view details for (0 to cancel)");
+		try {
+			System.out.println(transferService.getTransferById(currentUser, transferId).toString());
+		}
+		catch (Exception e) {
+			System.out.println("Transfer not found!");
+		}
+	}
 
 	private void sendBucks() {
     	User[] users = userService.getAllUsers(currentUser);
@@ -130,7 +129,9 @@ private static final String API_BASE_URL = "http://localhost:8080/";
 					}
 					System.out.println("Found user " + u.getId());
 					BigDecimal amountToTransfer = new BigDecimal(console.getUserInput("Enter amount to transfer (0 to cancel)"));
-					if ((amountToTransfer.compareTo(BigDecimal.ZERO) > 0) && (amountToTransfer.compareTo(viewCurrentBalance()) <= 0) ) {
+
+					if ((amountToTransfer.compareTo(BigDecimal.ZERO) > 0) &&
+					(amountToTransfer.compareTo(accountService.getAccountById(currentUser).getBalance()) <= 0) ) {
 						Transfer t = new Transfer();
 						t.setAccountFrom(accountService.getAccountById(currentUser).getAccountId());
 						t.setAccountTo(toAccountId);

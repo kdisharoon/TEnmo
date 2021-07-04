@@ -44,7 +44,7 @@ public class TransferService {
         Integer userId = currentUser.getUser().getId();
 
         try {
-            transfers = restTemplate.exchange(API_BASE_URL + "transfers/" + userId, HttpMethod.GET,
+            transfers = restTemplate.exchange(API_BASE_URL + "accounts/" + userId + "/transfers", HttpMethod.GET,
                                               makeAuthEntity(currentUser), Transfer[].class).getBody();
         }
         catch (Exception e) {
