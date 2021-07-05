@@ -1,5 +1,7 @@
 package com.techelevator.tenmo.dao;
 
+import com.techelevator.tenmo.exception.TransferNotFoundException;
+import com.techelevator.tenmo.model.Account;
 import com.techelevator.tenmo.model.Transfer;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.rowset.SqlRowSet;
@@ -22,16 +24,38 @@ public class JdbcTransferDao implements TransferDao {
 
 
     @Override
-    public Transfer getTransfer(Integer transferId) {
+    public Transfer getTransfer(Integer transferId) throws TransferNotFoundException {
         Transfer t = null;
         String sql = "SELECT transfer_id, transfer_type_id, transfer_status_id, account_from, account_to, amount " +
                      "FROM transfers " +
                      "WHERE transfer_id = ?;";
-
         SqlRowSet results = jdbcTemplate.queryForRowSet(sql, transferId);
         if (results.next()) {
             t =  mapRowToTransfer(results);
         }
+        else {
+            throw new TransferNotFoundException();
+        }
+
+        assert t != null;
+
+        String sqlFrom = "SELECT username FROM users u " +
+                         "JOIN accounts a USING (user_id) JOIN transfers t ON (a.account_id = t.account_from) " +
+                         "WHERE t.transfer_id = ?;";
+        SqlRowSet fromResults = jdbcTemplate.queryForRowSet(sqlFrom, transferId);
+        if (fromResults.next()) {
+            t.setUsernameFrom(fromResults.getString("username"));
+        }
+
+        String sqlTo = "SELECT username FROM users u " +
+                "JOIN accounts a USING (user_id) JOIN transfers t ON (a.account_id = t.account_to) " +
+                "WHERE t.transfer_id = ?;";
+        SqlRowSet toResults = jdbcTemplate.queryForRowSet(sqlTo, transferId);
+        if (toResults.next()) {
+            t.setUsernameTo(toResults.getString("username"));
+        }
+
+        System.out.println(t.toString());
 
         return t;
     }
@@ -41,35 +65,55 @@ public class JdbcTransferDao implements TransferDao {
 
         List<Transfer> transfers = new ArrayList<>();
         String sql = "SELECT transfer_id, transfer_type_id, transfer_status_id, account_from, account_to, amount " +
-                "FROM transfers t" +
-                "JOIN accounts a ON (t.account_from = a.account_id OR t.account_to = a.account_id)" +
-                "JOIN users u ON (a.user_id = u.user_id)" +
+                "FROM transfers t " +
+                "JOIN accounts a ON (t.account_from = a.account_id OR t.account_to = a.account_id) " +
+                "JOIN users u ON (a.user_id = u.user_id) " +
                 "WHERE a.user_id = ?;";
         SqlRowSet results = jdbcTemplate.queryForRowSet(sql, userId);
-        while (results.next()) {
-            transfers.add(mapRowToTransfer(results));
-        }
-        return transfers;
 
+        while (results.next()) {
+            Transfer t = mapRowToTransfer(results);
+
+            String sqlFrom = "SELECT username FROM users u " +
+                    "JOIN accounts a USING (user_id) JOIN transfers t ON (a.account_id = t.account_from) " +
+                    "WHERE t.transfer_id = ?;";
+            SqlRowSet fromResults = jdbcTemplate.queryForRowSet(sqlFrom, t.getTransferId());
+            if (fromResults.next()) {
+                t.setUsernameFrom(fromResults.getString("username"));
+            }
+
+            String sqlTo = "SELECT username FROM users u " +
+                    "JOIN accounts a USING (user_id) JOIN transfers t ON (a.account_id = t.account_to) " +
+                    "WHERE t.transfer_id = ?;";
+            SqlRowSet toResults = jdbcTemplate.queryForRowSet(sqlTo, t.getTransferId());
+            if (toResults.next()) {
+                t.setUsernameTo(toResults.getString("username"));
+            }
+
+            transfers.add(t);
+
+            System.out.println(t.toString());
+        }
+
+        return transfers;
     }
 
     @Override
-    public BigDecimal createTransfer(Integer userFromId, Integer userToId, BigDecimal amount) {
+    public Transfer createTransfer(Transfer transfer) throws TransferNotFoundException {
+        String sql = "INSERT INTO transfers (transfer_type_id, transfer_status_id, account_from, account_to, amount) " +
+                     "VALUES (?, ?, ?, ?, ?) RETURNING transfer_id;";
+        Integer newTransferId = jdbcTemplate.queryForObject(sql, Integer.class, transfer.getTransferTypeId(),
+                transfer.getTransferStatusId(), transfer.getAccountFrom(), transfer.getAccountTo(), transfer.getAmount());
 
-        BigDecimal fromBalance = accountDao.getAccount(userFromId).getBalance();
-        BigDecimal toBalance = accountDao.getAccount(userToId).getBalance();
+        String sqlFrom = "UPDATE accounts SET balance = ? WHERE account_id = ?;";
+        Account fromAccount = accountDao.getAccountByAccountId(transfer.getAccountFrom());
+        jdbcTemplate.update(sqlFrom, fromAccount.getBalance().subtract(transfer.getAmount()), fromAccount.getAccountId());
 
-        if (fromBalance.compareTo(amount) >= 0) {
-            BigDecimal toBalanceNew = toBalance.add(amount);
-            BigDecimal fromBalanceNew = fromBalance.subtract(amount);
+        String sqlTo = "UPDATE accounts SET balance = ? WHERE account_id = ?;";
+        Account toAccount = accountDao.getAccountByAccountId(transfer.getAccountTo());
+        jdbcTemplate.update(sqlTo, toAccount.getBalance().add(transfer.getAmount()), toAccount.getAccountId());
 
-            String sql = "UPDATE accounts SET balance = ? WHERE account_id = ?;";
-
-            jdbcTemplate.update(sql, toBalanceNew, userToId);
-            jdbcTemplate.update(sql, fromBalanceNew, userFromId);
-        }
-
-        return amount;
+        return getTransfer(newTransferId);
     }
 
     private Transfer mapRowToTransfer(SqlRowSet rs) {

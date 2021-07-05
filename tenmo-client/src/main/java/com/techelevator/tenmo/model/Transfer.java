@@ -10,6 +10,8 @@ public class Transfer {
     private Integer accountFrom;
     private Integer accountTo;
     private BigDecimal amount;
+    private String usernameFrom;
+    private String usernameTo;
 
     public Transfer() { }
 
@@ -70,16 +72,25 @@ public class Transfer {
         this.amount = amount;
     }
 
+    public String getUsernameFrom() {
+        return usernameFrom;
+    }
+
+    public void setUsernameFrom(String usernameFrom) {
+        this.usernameFrom = usernameFrom;
+    }
+
+    public String getUsernameTo() {
+        return usernameTo;
+    }
+
+    public void setUsernameTo(String usernameTo) {
+        this.usernameTo = usernameTo;
+    }
+
     @Override
     public String toString() {
-        return "Transfer{" +
-                "transferId=" + transferId +
-                ", transferTypeId='" + transferTypeId +
-                ", transferStatusId=" + transferStatusId +
-                ", accountFrom=" + accountFrom +
-                ", accountTo=" + accountTo +
-                ", amount=" + amount +
-                '}';
+        return "Transfer ID: " + transferId + ", From: " + usernameFrom + ", To: " + usernameTo + ", Amount: " + amount;
     }
 
 }

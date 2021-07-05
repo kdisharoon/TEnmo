@@ -26,13 +26,9 @@ public class TransferService {
 
         Transfer transfer = null;
 
-        HttpHeaders headers = new HttpHeaders();
-        headers.setBearerAuth(currentUser.getToken());
-        HttpEntity entity = new HttpEntity(headers);
-
         try {
-            transfer = restTemplate.exchange(API_BASE_URL + "transfers/" + transferId,
-                                             HttpMethod.GET, entity, Transfer.class).getBody();
+            transfer = restTemplate.exchange(API_BASE_URL + "transfers/" + transferId, HttpMethod.GET,
+                                             makeAuthEntity(currentUser), Transfer.class).getBody();
         }
         catch (Exception e) {
             System.out.println("getTransferById exception!");
@@ -43,18 +39,13 @@ public class TransferService {
     }
 
     public Transfer[] getAllTransfers(AuthenticatedUser currentUser) {
-
         Transfer[] transfers = null;
-
-        HttpHeaders headers = new HttpHeaders();
-        headers.setBearerAuth(currentUser.getToken());
-        HttpEntity entity = new HttpEntity(headers);
 
         Integer userId = currentUser.getUser().getId();
 
         try {
-            transfers = restTemplate.exchange(API_BASE_URL + "transfers/" + userId,
-                                              HttpMethod.GET, entity, Transfer[].class).getBody();
+            transfers = restTemplate.exchange(API_BASE_URL + "accounts/" + userId + "/transfers", HttpMethod.GET,
+                                              makeAuthEntity(currentUser), Transfer[].class).getBody();
         }
         catch (Exception e) {
             System.out.println("getAllTransfers exception!");
@@ -64,7 +55,31 @@ public class TransferService {
 
     }
 
+    public Transfer createTransfer(AuthenticatedUser currentUser, Transfer transfer) {
+        try {
+            transfer = restTemplate.postForObject(API_BASE_URL + "transfers",
+                       makeTransferEntity(currentUser, transfer), Transfer.class);
+        }
+        catch (Exception e) {
+            System.out.println("createTransfer in TransferService exception!");
+        }
+        return transfer;
+    }
 
+    private HttpEntity makeAuthEntity(AuthenticatedUser currentUser) {
+        HttpHeaders headers = new HttpHeaders();
+        headers.setBearerAuth(currentUser.getToken());
+        HttpEntity entity = new HttpEntity(headers);
+        return entity;
+    }
+
+    private HttpEntity<Transfer> makeTransferEntity(AuthenticatedUser currentUser, Transfer t) {
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        headers.setBearerAuth(currentUser.getToken());
+        HttpEntity<Transfer> entity = new HttpEntity<>(t, headers);
+        return entity;
+    }
 
 
 
