@@ -62,7 +62,6 @@ private static final String API_BASE_URL = "http://localhost:8080/";
 				viewCurrentBalance();
 			} else if(MAIN_MENU_OPTION_VIEW_PAST_TRANSFERS.equals(choice)) {
 				viewTransferHistory();
-				viewTransferDetails();
 			} else if(MAIN_MENU_OPTION_VIEW_PENDING_REQUESTS.equals(choice)) {
 				viewPendingRequests();
 			} else if(MAIN_MENU_OPTION_SEND_BUCKS.equals(choice)) {
@@ -88,28 +87,54 @@ private static final String API_BASE_URL = "http://localhost:8080/";
 		for (Transfer t : transfers) {
 			System.out.println(t.toString());
 		}
+		viewTransferDetails(transfers);
 	}
 
 	private void viewPendingRequests() {
-		// TODO Auto-generated method stub
-		
+		Transfer[] transfers = transferService.getAllPendingTransfers(currentUser);
+		for (Transfer t : transfers) {
+			System.out.println(t.toStringPending());
+		}
+		approveOrRejectTransfer(transfers);
 	}
 
-	private void viewTransferDetails() {
+	private void viewTransferDetails(Transfer[] transfers) {
 		Integer transferId = console.getUserInputInteger("\nEnter Transfer ID for the transfer you'd like to view details for (0 to cancel)");
 
-		Transfer[] transfers = transferService.getAllTransfers(currentUser);
-		boolean found = false;
+		if (transferId != 0) {
+			boolean found = false;
 
-		for (Transfer t : transfers) {
-			if (t.getTransferId().equals(transferId)) {
-				found = true;
-				transferService.getTransferById(currentUser, transferId).printFullTransferDetails();
+			for (Transfer t : transfers) {
+				if (t.getTransferId().equals(transferId)) {
+					found = true;
+					transferService.getTransferById(currentUser, transferId).printFullTransferDetails();
+				}
+			}
+
+			if (!found) {
+				System.out.println("\nTransfer not found!");
 			}
 		}
 
-		if (!found) {
-			System.out.println("\nTransfer not found!");
+	}
+
+	private void approveOrRejectTransfer(Transfer[] transfers) {
+
+		Integer transferId = console.getUserInputInteger("\nEnter Transfer ID for the transfer you'd like to approve or reject (0 to cancel)");
+
+		if (transferId != 0) {
+			boolean found = false;
+
+			for (Transfer t : transfers) {
+				if (t.getTransferId().equals(transferId)) {
+					found = true;
+					transferService.getTransferById(currentUser, transferId).printFullTransferDetails();
+				}
+			}
+
+			if (!found) {
+				System.out.println("\nTransfer not found!");
+			}
 		}
 
 	}
@@ -126,7 +151,7 @@ private static final String API_BASE_URL = "http://localhost:8080/";
 		Integer toAccountId = null;
 		boolean found = false;
 
-		if (!(toUserId == 0)) {
+		if (toUserId != 0) {
 			for (User u : users) {
 				if (u.getId().equals(toUserId)) {
 					for (Account a : accounts) {

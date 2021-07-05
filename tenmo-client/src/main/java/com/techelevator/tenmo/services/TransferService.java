@@ -60,6 +60,27 @@ public class TransferService {
 
     }
 
+    public Transfer[] getAllPendingTransfers (AuthenticatedUser currentUser) {
+        Transfer[] transfers = null;
+
+        Integer userId = currentUser.getUser().getId();
+
+        try {
+            transfers = restTemplate.exchange(API_BASE_URL + "accounts/" + userId + "/transfers?status=pending",
+                    HttpMethod.GET, makeAuthEntity(currentUser), Transfer[].class).getBody();
+        }
+        catch (ResourceAccessException e) {
+            System.out.println(e.getMessage());
+        }
+        catch (RestClientResponseException e) {
+            System.out.println(e.getRawStatusCode());
+        }
+
+        return transfers;
+
+
+    }
+
     public Transfer createTransfer(AuthenticatedUser currentUser, Transfer transfer) {
         try {
             transfer = restTemplate.postForObject(API_BASE_URL + "transfers",

@@ -107,4 +107,8 @@ public class Transfer {
         System.out.println("Amount: " + amount);
     }
 
+    public String toStringPending() {
+        return "Transfer ID: " + transferId + ", To: " + usernameTo + ", Amount: " + amount;
+    }
+
 }
