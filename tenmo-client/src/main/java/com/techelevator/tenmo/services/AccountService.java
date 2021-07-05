@@ -23,12 +23,6 @@ public class AccountService {
         this.API_BASE_URL = apiUrl;
     }
 
-    //
-    //  This method only gets the account of the currentUser. We need to ultimately get the username when we
-    //  have the account_from, which is the account_id in the accounts table. Is this a SQL thing?
-    //
-    //
-
     public Account getAccountById(AuthenticatedUser currentUser) {
         Account account = null;
 

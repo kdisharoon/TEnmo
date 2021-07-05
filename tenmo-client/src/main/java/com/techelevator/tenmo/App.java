@@ -101,6 +101,7 @@ private static final String API_BASE_URL = "http://localhost:8080/";
 	private void viewTransferDetails() {
 		Integer transferId = console.getUserInputInteger("Enter Transfer ID for the transfer you'd like to view details for (0 to cancel)");
 		try {
+			// change this to display the full transfer details
 			System.out.println(transferService.getTransferById(currentUser, transferId).toString());
 		}
 		catch (Exception e) {
@@ -130,6 +131,7 @@ private static final String API_BASE_URL = "http://localhost:8080/";
 					System.out.println("Found user " + u.getId());
 					BigDecimal amountToTransfer = new BigDecimal(console.getUserInput("Enter amount to transfer (0 to cancel)"));
 
+					//clarify what the compareTo is checking
 					if ((amountToTransfer.compareTo(BigDecimal.ZERO) > 0) &&
 					(amountToTransfer.compareTo(accountService.getAccountById(currentUser).getBalance()) <= 0) ) {
 						Transfer t = new Transfer();

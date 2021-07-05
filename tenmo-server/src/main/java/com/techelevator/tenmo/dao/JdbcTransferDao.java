@@ -62,11 +62,7 @@ public class JdbcTransferDao implements TransferDao {
 
     @Override
     public List<Transfer> getAllTransfers(Integer userId) {
-        //
-        //
-        //add a username_from and username_to field here, and add it to the Transfer class on the back end as well
-        //
-        //
+
         List<Transfer> transfers = new ArrayList<>();
         String sql = "SELECT transfer_id, transfer_type_id, transfer_status_id, account_from, account_to, amount " +
                 "FROM transfers t " +
