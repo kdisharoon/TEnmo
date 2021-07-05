@@ -6,8 +6,6 @@ import com.techelevator.tenmo.model.Transfer;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.rowset.SqlRowSet;
 import org.springframework.stereotype.Component;
-
-import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -25,7 +23,7 @@ public class JdbcTransferDao implements TransferDao {
 
     @Override
     public Transfer getTransfer(Integer transferId) throws TransferNotFoundException {
-        Transfer t = null;
+        Transfer t;
         String sql = "SELECT transfer_id, transfer_type_id, transfer_status_id, account_from, account_to, amount " +
                      "FROM transfers " +
                      "WHERE transfer_id = ?;";
@@ -54,8 +52,6 @@ public class JdbcTransferDao implements TransferDao {
         if (toResults.next()) {
             t.setUsernameTo(toResults.getString("username"));
         }
-
-        System.out.println(t.toString());
 
         return t;
     }
@@ -91,8 +87,6 @@ public class JdbcTransferDao implements TransferDao {
             }
 
             transfers.add(t);
-
-            System.out.println(t.toString());
         }
 
         return transfers;
@@ -105,6 +99,15 @@ public class JdbcTransferDao implements TransferDao {
         Integer newTransferId = jdbcTemplate.queryForObject(sql, Integer.class, transfer.getTransferTypeId(),
                 transfer.getTransferStatusId(), transfer.getAccountFrom(), transfer.getAccountTo(), transfer.getAmount());
 
+        //if this transfer has been approved
+        if (transfer.getTransferStatusId() == 2) {
+            updateBalances(transfer);
+        }
+
+        return getTransfer(newTransferId);
+    }
+
+    private void updateBalances(Transfer transfer) {
         String sqlFrom = "UPDATE accounts SET balance = ? WHERE account_id = ?;";
         Account fromAccount = accountDao.getAccountByAccountId(transfer.getAccountFrom());
         jdbcTemplate.update(sqlFrom, fromAccount.getBalance().subtract(transfer.getAmount()), fromAccount.getAccountId());
@@ -112,8 +115,6 @@ public class JdbcTransferDao implements TransferDao {
         String sqlTo = "UPDATE accounts SET balance = ? WHERE account_id = ?;";
         Account toAccount = accountDao.getAccountByAccountId(transfer.getAccountTo());
         jdbcTemplate.update(sqlTo, toAccount.getBalance().add(transfer.getAmount()), toAccount.getAccountId());
-
-        return getTransfer(newTransferId);
     }
 
     private Transfer mapRowToTransfer(SqlRowSet rs) {

@@ -1,12 +1,12 @@
 package com.techelevator.tenmo;
 
+import com.techelevator.tenmo.exception.AcctNotFoundException;
+import com.techelevator.tenmo.exception.TransferNotFoundException;
 import com.techelevator.tenmo.model.*;
 import com.techelevator.tenmo.services.*;
 import com.techelevator.view.ConsoleService;
-import io.cucumber.java.bs.A;
-
 import java.math.BigDecimal;
-import java.util.Arrays;
+
 
 public class App {
 
@@ -31,7 +31,7 @@ private static final String API_BASE_URL = "http://localhost:8080/";
     private TransferService transferService;
     private UserService userService;
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws TransferNotFoundException, AcctNotFoundException {
     	App app = new App(new ConsoleService(System.in, System.out), new AuthenticationService(API_BASE_URL),
 				          new AccountService(API_BASE_URL), new TransferService(API_BASE_URL), new UserService(API_BASE_URL));
     	app.run();
@@ -46,7 +46,7 @@ private static final String API_BASE_URL = "http://localhost:8080/";
 		this.userService = userService;
 	}
 
-	public void run() {
+	public void run() throws TransferNotFoundException, AcctNotFoundException {
 		System.out.println("*********************");
 		System.out.println("* Welcome to TEnmo! *");
 		System.out.println("*********************");
@@ -55,7 +55,7 @@ private static final String API_BASE_URL = "http://localhost:8080/";
 		mainMenu();
 	}
 
-	private void mainMenu() {
+	private void mainMenu() throws TransferNotFoundException, AcctNotFoundException {
 		while(true) {
 			String choice = (String)console.getChoiceFromOptions(MAIN_MENU_OPTIONS);
 			if(MAIN_MENU_OPTION_VIEW_BALANCE.equals(choice)) {
@@ -78,19 +78,16 @@ private static final String API_BASE_URL = "http://localhost:8080/";
 		}
 	}
 
-	private BigDecimal viewCurrentBalance() {
+	private void viewCurrentBalance() {
     	Account a = accountService.getAccountById(currentUser);
-		System.out.println("Your current balance is: " + a.getBalance());
-		return a.getBalance();
+    	System.out.println("\nYour current balance is: " + a.getBalance());
 	}
 
 	private void viewTransferHistory() {
 		Transfer[] transfers = transferService.getAllTransfers(currentUser);
-
 		for (Transfer t : transfers) {
 			System.out.println(t.toString());
 		}
-		
 	}
 
 	private void viewPendingRequests() {
@@ -99,14 +96,22 @@ private static final String API_BASE_URL = "http://localhost:8080/";
 	}
 
 	private void viewTransferDetails() {
-		Integer transferId = console.getUserInputInteger("Enter Transfer ID for the transfer you'd like to view details for (0 to cancel)");
-		try {
-			// change this to display the full transfer details
-			System.out.println(transferService.getTransferById(currentUser, transferId).toString());
+		Integer transferId = console.getUserInputInteger("\nEnter Transfer ID for the transfer you'd like to view details for (0 to cancel)");
+
+		Transfer[] transfers = transferService.getAllTransfers(currentUser);
+		boolean found = false;
+
+		for (Transfer t : transfers) {
+			if (t.getTransferId().equals(transferId)) {
+				found = true;
+				transferService.getTransferById(currentUser, transferId).printFullTransferDetails();
+			}
 		}
-		catch (Exception e) {
-			System.out.println("Transfer not found!");
+
+		if (!found) {
+			System.out.println("\nTransfer not found!");
 		}
+
 	}
 
 	private void sendBucks() {
@@ -119,6 +124,7 @@ private static final String API_BASE_URL = "http://localhost:8080/";
 
 		Integer toUserId = console.getUserInputInteger("Enter ID of user you'd like to send TE bucks to (0 to cancel)");
 		Integer toAccountId = null;
+		boolean found = false;
 
 		if (!(toUserId == 0)) {
 			for (User u : users) {
@@ -128,12 +134,19 @@ private static final String API_BASE_URL = "http://localhost:8080/";
 							toAccountId = a.getAccountId();
 						}
 					}
-					System.out.println("Found user " + u.getId());
+
+					if (toUserId.equals(currentUser.getUser().getId())) {
+						break;
+					}
+
+					System.out.println("\nFound user " + u.getId());
+					found = true;
+					viewCurrentBalance();
 					BigDecimal amountToTransfer = new BigDecimal(console.getUserInput("Enter amount to transfer (0 to cancel)"));
 
-					//clarify what the compareTo is checking
+					//lines below are checking if transfer amount is greater than zero, and if account has enough to transfer
 					if ((amountToTransfer.compareTo(BigDecimal.ZERO) > 0) &&
-					(amountToTransfer.compareTo(accountService.getAccountById(currentUser).getBalance()) <= 0) ) {
+					   (amountToTransfer.compareTo(accountService.getAccountById(currentUser).getBalance()) <= 0) ) {
 						Transfer t = new Transfer();
 						t.setAccountFrom(accountService.getAccountById(currentUser).getAccountId());
 						t.setAccountTo(toAccountId);
@@ -141,15 +154,75 @@ private static final String API_BASE_URL = "http://localhost:8080/";
 						t.setTransferStatusId(2);
 						t.setTransferTypeId(2);
 						transferService.createTransfer(currentUser, t);
+						System.out.println("\nTransfer successful!");
+					}
+					else {
+						System.out.println("\nSorry, that's not a valid amount to transfer!");
 					}
 				}
 			}
+
+			if (!found) {
+				System.out.println("\nUser not found!");
+			}
+
 		}
+
 	}
 
 	private void requestBucks() {
-		// TODO Auto-generated method stub
-		
+		User[] users = userService.getAllUsers(currentUser);
+		Account[] accounts = accountService.getAllAccounts(currentUser);
+
+		for (User u : users) {
+			System.out.println(u.toString());
+		}
+
+		Integer fromUserId = console.getUserInputInteger("Enter ID of user you'd like to request TE bucks from (0 to cancel)");
+		Integer fromAccountId = null;
+		boolean found = false;
+
+		if (!(fromUserId == 0)) {
+			for (User u : users) {
+				if (u.getId().equals(fromUserId)) {
+					for (Account a : accounts) {
+						if (a.getUserId().equals(fromUserId)) {
+							fromAccountId = a.getAccountId();
+						}
+					}
+
+					if (fromUserId.equals(currentUser.getUser().getId())) {
+						break;
+					}
+
+					System.out.println("\nFound user " + u.getId());
+					found = true;
+					viewCurrentBalance();
+					BigDecimal amountToTransfer = new BigDecimal(console.getUserInput("Enter amount to request (0 to cancel)"));
+
+					//line below is checking if transfer amount is greater than zero
+					if (amountToTransfer.compareTo(BigDecimal.ZERO) > 0) {
+						Transfer t = new Transfer();
+						t.setAccountFrom(fromAccountId);
+						t.setAccountTo(accountService.getAccountById(currentUser).getAccountId());
+						t.setAmount(amountToTransfer);
+						t.setTransferStatusId(1);
+						t.setTransferTypeId(1);
+						transferService.createTransfer(currentUser, t);
+						System.out.println("\nTransfer request successful!");
+					}
+					else {
+						System.out.println("\nSorry, that's not a valid amount to request!");
+					}
+				}
+			}
+
+			if (!found) {
+				System.out.println("\nUser not found!");
+			}
+
+		}
+
 	}
 	
 	private void exitProgram() {

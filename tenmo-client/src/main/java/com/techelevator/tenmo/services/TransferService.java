@@ -1,6 +1,6 @@
 package com.techelevator.tenmo.services;
 
-import com.techelevator.tenmo.model.Account;
+import com.techelevator.tenmo.exception.TransferNotFoundException;
 import com.techelevator.tenmo.model.AuthenticatedUser;
 import com.techelevator.tenmo.model.Transfer;
 import org.springframework.http.HttpEntity;
@@ -11,7 +11,6 @@ import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestClientResponseException;
 import org.springframework.web.client.RestTemplate;
 
-import java.math.BigDecimal;
 
 public class TransferService {
     private final String API_BASE_URL;
@@ -30,8 +29,11 @@ public class TransferService {
             transfer = restTemplate.exchange(API_BASE_URL + "transfers/" + transferId, HttpMethod.GET,
                                              makeAuthEntity(currentUser), Transfer.class).getBody();
         }
-        catch (Exception e) {
-            System.out.println("getTransferById exception!");
+        catch (ResourceAccessException e) {
+            System.out.println(e.getMessage());
+        }
+        catch (RestClientResponseException e) {
+            System.out.println(e.getRawStatusCode());
         }
 
         return transfer;
@@ -47,8 +49,11 @@ public class TransferService {
             transfers = restTemplate.exchange(API_BASE_URL + "accounts/" + userId + "/transfers", HttpMethod.GET,
                                               makeAuthEntity(currentUser), Transfer[].class).getBody();
         }
-        catch (Exception e) {
-            System.out.println("getAllTransfers exception!");
+        catch (ResourceAccessException e) {
+            System.out.println(e.getMessage());
+        }
+        catch (RestClientResponseException e) {
+            System.out.println(e.getRawStatusCode());
         }
 
         return transfers;
@@ -60,8 +65,11 @@ public class TransferService {
             transfer = restTemplate.postForObject(API_BASE_URL + "transfers",
                        makeTransferEntity(currentUser, transfer), Transfer.class);
         }
-        catch (Exception e) {
-            System.out.println("createTransfer in TransferService exception!");
+        catch (ResourceAccessException e) {
+            System.out.println(e.getMessage());
+        }
+        catch (RestClientResponseException e) {
+            System.out.println(e.getRawStatusCode());
         }
         return transfer;
     }
@@ -80,8 +88,5 @@ public class TransferService {
         HttpEntity<Transfer> entity = new HttpEntity<>(t, headers);
         return entity;
     }
-
-
-
 
 }

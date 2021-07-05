@@ -2,16 +2,12 @@ package com.techelevator.tenmo.services;
 
 import com.techelevator.tenmo.model.Account;
 import com.techelevator.tenmo.model.AuthenticatedUser;
-import com.techelevator.tenmo.model.Transfer;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
-import org.springframework.http.MediaType;
 import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestClientResponseException;
 import org.springframework.web.client.RestTemplate;
-
-import java.math.BigDecimal;
 
 
 public class AccountService {
@@ -30,8 +26,11 @@ public class AccountService {
             account = restTemplate.exchange(API_BASE_URL + "accounts/" + currentUser.getUser().getId(),
                                             HttpMethod.GET, makeAuthEntity(currentUser), Account.class).getBody();
         }
-        catch (Exception e) {
-            System.out.println("getAccountById exception!");
+        catch (ResourceAccessException e) {
+            System.out.println(e.getMessage());
+        }
+        catch (RestClientResponseException e) {
+            System.out.println(e.getRawStatusCode());
         }
 
         return account;
@@ -45,34 +44,14 @@ public class AccountService {
             accounts = restTemplate.exchange(API_BASE_URL + "accounts",
                        HttpMethod.GET, makeAuthEntity(currentUser), Account[].class).getBody();
         }
-        catch (Exception e) {
-            System.out.println("getAllAccounts exception!");
+        catch (ResourceAccessException e) {
+            System.out.println(e.getMessage());
+        }
+        catch (RestClientResponseException e) {
+            System.out.println(e.getRawStatusCode());
         }
 
         return accounts;
-    }
-
-
-
-    //not sure if we want this method - will review later
-    public Account updateAccount(AuthenticatedUser currentUser, BigDecimal newBalance) {
-
-        Account account = getAccountById(currentUser);
-        account.setBalance(newBalance);
-
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_JSON);
-        HttpEntity<Account> entity = new HttpEntity<>(account, headers);
-
-        try {
-            restTemplate.put(API_BASE_URL + "accounts/" + account.getAccountId(), entity);
-        } catch (RestClientResponseException e) {
-            System.out.println(e.getRawStatusCode() + " : " + e.getStatusText());
-        } catch (ResourceAccessException e) {
-            System.out.println(e.getMessage());
-        }
-
-        return account;
     }
 
     private HttpEntity makeAuthEntity(AuthenticatedUser currentUser) {
@@ -81,7 +60,5 @@ public class AccountService {
         HttpEntity entity = new HttpEntity(headers);
         return entity;
     }
-
-
 
 }
