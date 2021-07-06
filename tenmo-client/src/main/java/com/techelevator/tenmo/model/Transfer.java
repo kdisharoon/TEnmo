@@ -93,4 +93,22 @@ public class Transfer {
         return "Transfer ID: " + transferId + ", From: " + usernameFrom + ", To: " + usernameTo + ", Amount: " + amount;
     }
 
+    public void printFullTransferDetails() {
+        String transferTypeText = transferTypeId == 1 ? "Request" :
+                                  transferTypeId == 2 ? "Send" : "Error in Transfer Type";
+        String transferStatusText = transferStatusId == 1 ? "Pending" :
+                                    transferStatusId == 2 ? "Approved" :
+                                    transferStatusId == 3 ? "Rejected" : "Error in Transfer Status";
+        System.out.println("Transfer ID: " + transferId);
+        System.out.println("From: " + usernameFrom);
+        System.out.println("To: " + usernameTo);
+        System.out.println("Type: " + transferTypeText);
+        System.out.println("Status: " + transferStatusText);
+        System.out.println("Amount: " + amount);
+    }
+
+    public String toStringPending() {
+        return "Transfer ID: " + transferId + ", To: " + usernameTo + ", Amount: " + amount;
+    }
+
 }

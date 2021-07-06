@@ -58,9 +58,20 @@ public class TenmoController {
         return accountDao.updateAccount(acct, id);
     }
 
+//    @RequestMapping(path = "accounts/{id}/transfers", method = RequestMethod.GET)
+//    public List<Transfer> getTransfers(@PathVariable("id") Integer userId) throws UserNotFoundException {
+//        return transferDao.getAllTransfers(userId);
+//    }
+
     @RequestMapping(path = "accounts/{id}/transfers", method = RequestMethod.GET)
-    public List<Transfer> getTransfers(@PathVariable("id") Integer userId) throws UserNotFoundException {
-        return transferDao.getAllTransfers(userId);
+    public List<Transfer> getTransfers(@PathVariable("id") Integer userId,
+                                @RequestParam(required = false, defaultValue = "") String status, @RequestParam(defaultValue = "100") Integer limit) {
+        if (status.equalsIgnoreCase("pending")) {
+            return transferDao.getAllPendingTransfers(userId);
+        }
+        else {
+            return transferDao.getAllTransfers(userId);
+        }
     }
 
     @RequestMapping(path = "transfers/{transferId}", method = RequestMethod.GET)

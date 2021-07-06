@@ -10,6 +10,8 @@ public interface TransferDao {
 
     Transfer getTransfer(Integer transferId) throws TransferNotFoundException;
 
+    List<Transfer> getAllPendingTransfers(Integer userId);
+
     List<Transfer> getAllTransfers(Integer userId);
 
     Transfer createTransfer(Transfer transfer) throws TransferNotFoundException;
