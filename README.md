@@ -1,3 +1,5 @@
+This project was the second capstone in Tech Elevator. For the future, I plan to refactor some code that is redundant, incorporate better error-checking on the front-end and separate the controller on the back end into three different controllers for better encapsulation. Also Request Transfer is not fully implemented and unit tests/integration tests are still needed.
+
 # Module 2 Capstone - TEnmo
 
 Congratulations—you've landed a job with TEnmo, whose product is an online payment service for transferring "TE bucks" between friends. However, they don't have a product yet. You've been tasked with writing a RESTful API server and command-line application.
@@ -6,12 +8,11 @@ Congratulations—you've landed a job with TEnmo, whose product is an online pay
 
 ### Required use cases
 
-You should attempt to complete all of the following required use cases.
 
-1. **[COMPLETE]** As a user of the system, I need to be able to register myself with a username and password.
+1. As a user of the system, I need to be able to register myself with a username and password.
    1. A new registered user starts with an initial balance of 1,000 TE Bucks.
    2. The ability to register has been provided in your starter code.
-2. **[COMPLETE]** As a user of the system, I need to be able to log in using my registered username and password.
+2. As a user of the system, I need to be able to log in using my registered username and password.
    1. Logging in returns an Authentication Token. I need to include this token with all my subsequent interactions with the system outside of registering and logging in.
    2. The ability to log in has been provided in your starter code.
 3. As an authenticated user of the system, I need to be able to see my Account Balance.
@@ -126,8 +127,6 @@ Please choose an option:
 
 ## Database schema
 
-![Database schema](./img/database_schema.png)
-
 ### Users table
 
 The `users` table stores the login information for users of the system.
@@ -194,9 +193,6 @@ The `transfer` table stores the transfers of TE bucks.
 | `account_to`         | Foreign key to the `accounts` table; identifies the account that the funds are going to         |
 | `amount`             | Amount of the transfer                                                                          |
 
-## How to set up the database
-
-In the database folder, you'll find the database creation scripts and a shell script called `create.sh`. Run `./create.sh` from the database folder in Bash to create the database.
 
 ## Authentication
 
